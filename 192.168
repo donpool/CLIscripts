@@ -1,0 +1,50 @@
+#!/bin/bash
+
+# Script for accessing common prefix networks via SSH
+# $id 20160710123456 Paul Bernal donpool@gmail.com
+
+# Conf section
+oct3="100"
+user="root"
+ip=$(basename $0)
+
+# Function for usage message print
+function usage {
+  echo "Usage: ${ip} <OCT> [oct] [user]"; 
+  echo "     <OCT> fourth octet or thirth if [oct] is provided"; 
+  echo "     [oct] fourth octet."; 
+  echo "     [user] username to connect with."; 
+  exit 1; 
+}
+
+# Show usage if not params provided
+[ -n "$1" ] || usage;
+
+# If one param is provided, is the 4th octet
+if [ $# -eq 1 ]; then
+  ip=$ip.$oct3.$1
+# If two params are provided:
+elif [ $# -eq 2 ]; then
+  re='^[0-9]+$'
+  # if 1st param is numeric:
+  # 1st param is 3th octet & 2nd param is 4th octet
+  if [[ $2 =~ $re ]]; then
+    ip=$ip.$1.$2
+  # if 1st param is not numeric:
+  # 1st param is 4th octet & 2nd param is username
+  else
+    ip=$ip.$oct3.$1
+    user=$2
+  fi
+# if more than two params is provided:
+# 1st param is 3th octet, 2nd param is 4th octet & 3th param is username
+else
+  ip=$ip.$1.$2
+  user=$3
+fi
+
+# Print message and connect
+echo "Connecting to ${user}@${ip} ...";
+ssh -AXC $user@$ip
+exit 0
+
